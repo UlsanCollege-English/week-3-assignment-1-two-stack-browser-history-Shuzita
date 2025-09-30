@@ -1,24 +1,50 @@
-
-### /src/history.py (starter)
+# src/history.py
 
 class BrowserHistory:
     def __init__(self, start="home"):
-        # TODO: choose your internal representation (two stacks)
-        self._cur = start
-        self._back = []   # TODO
-        self._fwd = []    # TODO
+        # current page starts at "home", but NOT in history
+        self.cur = start
+        self.back_stack = []
+        self.fwd_stack = []
 
-    def visit(self, url: str) -> None:
-        # TODO: push current to back, set current, clear forward
-        raise NotImplementedError
+    def visit(self, url):
+        # push current only if it's not the initial "home"
+        if self.cur != "home" or self.back_stack or self.fwd_stack:
+            self.back_stack.append(self.cur)
+        self.cur = url
+        self.fwd_stack.clear()
 
-    def back(self) -> str:
-        # TODO: move to previous page; decide error behavior on underflow
-        raise NotImplementedError
+    def back(self):
+        if not self.back_stack:
+            raise IndexError("No pages in back history")
+        self.fwd_stack.append(self.cur)
+        self.cur = self.back_stack.pop()
+        return self.cur
 
-    def forward(self) -> str:
-        # TODO: move to next page; decide error behavior on underflow
-        raise NotImplementedError
+    def forward(self):
+        if not self.fwd_stack:
+            raise IndexError("No pages in forward history")
+        self.back_stack.append(self.cur)
+        self.cur = self.fwd_stack.pop()
+        return self.cur
 
-    def current(self) -> str:
-        return self._cur
+    def current(self):
+        return self.cur
+
+
+# quick demo (not part of tests, just for manual run)
+if __name__ == "__main__":
+    h = BrowserHistory()
+    print("Start:", h.current())   # home
+    h.visit("a"); h.visit("b"); h.visit("c")
+    print("Back:", h.back())       # b
+    print("Back:", h.back())       # a
+    try:
+        print("Back again:", h.back())  # should raise IndexError
+    except IndexError as e:
+        print("Error:", e)
+    h.visit("x")
+    try:
+        print("Forward:", h.forward())  # should raise IndexError
+    except IndexError as e:
+        print("Error:", e)
